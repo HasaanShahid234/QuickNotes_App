@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">QuickNotes App</string>
+    <string name="google_speech_api_key">AIzaSyBQXYSiiZCqmQbXeE1lXekcHBmy6uz2dtc</string>
 </resources>

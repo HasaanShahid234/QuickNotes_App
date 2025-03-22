@@ -1,13 +1,16 @@
 package com.example.quicknotesapp.ui
 
 import android.app.Dialog
+import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Color
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,12 +20,19 @@ import com.example.quicknotesapp.databinding.ActivityMainBinding
 import com.example.quicknotesapp.model.Note
 import com.example.quicknotesapp.utils.NoteViewModel
 import yuku.ambilwarna.AmbilWarnaDialog
+import java.util.Locale
 
 class MainActivity : AppCompatActivity(), NoteAdapter.ClickHandler {
     private lateinit var viewModel: NoteViewModel
     private lateinit var adapter: NoteAdapter
     private lateinit var binding: ActivityMainBinding
     private lateinit var notesList: List<Note>
+
+    private var noteTitle: String? = null
+    private var noteContent: String? = null
+    private lateinit var etTitle: EditText
+    private lateinit var etContent: EditText
+    private lateinit var dialog: Dialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,7 +42,7 @@ class MainActivity : AppCompatActivity(), NoteAdapter.ClickHandler {
         viewModel = ViewModelProvider(this)[NoteViewModel::class.java]
         notesList = ArrayList()
 
-        adapter = NoteAdapter(notesList,this)
+        adapter = NoteAdapter(notesList, this)
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = adapter
@@ -44,16 +54,20 @@ class MainActivity : AppCompatActivity(), NoteAdapter.ClickHandler {
         binding.addNotesBtn.setOnClickListener {
             showAddNotesDialog()
         }
-        binding.voiceBtn.setOnClickListener {
 
+        binding.voiceBtn.setOnClickListener {
+            noteTitle = null
+            noteContent = null
+            showAddNotesDialog(startWithVoice = true)
         }
     }
-    private fun showAddNotesDialog(){
-        val dialog = Dialog(this)
+
+    private fun showAddNotesDialog(startWithVoice: Boolean = false) {
+        dialog = Dialog(this)
         dialog.setContentView(R.layout.dialog_add_notes)
 
-        val etTitle = dialog.findViewById<EditText>(R.id.etTitle)
-        val etContent = dialog.findViewById<EditText>(R.id.etContent)
+        etTitle = dialog.findViewById(R.id.etTitle)
+        etContent = dialog.findViewById(R.id.etContent)
         val addBtn = dialog.findViewById<Button>(R.id.btnAddNotes)
 
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
@@ -61,6 +75,7 @@ class MainActivity : AppCompatActivity(), NoteAdapter.ClickHandler {
             (Resources.getSystem().displayMetrics.widthPixels * 0.9).toInt(),
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
+
         addBtn.setOnClickListener {
             val title = etTitle.text.toString().trim()
             val content = etContent.text.toString().trim()
@@ -68,14 +83,62 @@ class MainActivity : AppCompatActivity(), NoteAdapter.ClickHandler {
             if (title.isNotEmpty() && content.isNotEmpty()) {
                 val note = Note(title = title, content = content, color = Color.YELLOW, isPinned = false)
                 viewModel.insert(note)
-                Toast.makeText(this, "Expense added successfully!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Note added successfully!", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
             } else {
                 etTitle.error = "Required"
                 etContent.error = "Required"
             }
         }
+
         dialog.show()
+
+        if (startWithVoice) {
+            startVoiceInput("title")
+        }
+    }
+
+    private fun startVoiceInput(type: String) {
+        val prompt = if (type == "title") "Speak the title of the note" else "Now speak the note content"
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, prompt)
+        }
+        if (type == "title") {
+            titleVoiceInput.launch(intent)
+        } else {
+            contentVoiceInput.launch(intent)
+        }
+    }
+
+    private val titleVoiceInput = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK && result.data != null) {
+            val matches = result.data!!.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            if (!matches.isNullOrEmpty()) {
+                noteTitle = matches[0]
+                etTitle.setText(noteTitle)
+                startVoiceInput("content") 
+            }
+        } else {
+            Toast.makeText(this, "Failed to recognize speech", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val contentVoiceInput = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK && result.data != null) {
+            val matches = result.data!!.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            if (!matches.isNullOrEmpty()) {
+                noteContent = matches[0]
+                etContent.setText(noteContent)
+            }
+        } else {
+            Toast.makeText(this, "Failed to recognize speech", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onColorClick(note: Note) {

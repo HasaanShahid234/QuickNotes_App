@@ -38,6 +38,12 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    packagingOptions {
+        resources {
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/INDEX.LIST"
+        }
+    }
 }
 
 dependencies {
@@ -63,5 +69,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version")
     implementation ("com.github.yukuku:ambilwarna:2.0.1")
+
+    implementation ("com.google.cloud:google-cloud-speech:2.6.0") // Google Speech API
+    implementation ("com.google.code.gson:gson:2.8.9") // JSON parsing
+    implementation ("com.google.auth:google-auth-library-oauth2-http:1.20.0")
 }
 
