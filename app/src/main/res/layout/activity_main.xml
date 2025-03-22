@@ -46,19 +46,6 @@
         android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
         />
 
-    <Switch
-        android:id="@+id/switchDarkMode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:text="Dark Mode"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/welcomeLabel"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/welcomeLabel"
-        tools:ignore="UseSwitchCompatOrMaterialXml" />
-
-
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="0dp"
