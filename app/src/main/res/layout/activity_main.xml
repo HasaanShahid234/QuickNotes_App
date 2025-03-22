@@ -40,22 +40,25 @@
         android:text="Welcome"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/logout"
         android:layout_marginTop="8dp"
         android:layout_marginHorizontal="16dp"
         android:textStyle="bold"
         android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
         />
-    <ImageView
-        android:id="@+id/logout"
+
+    <Switch
+        android:id="@+id/switchDarkMode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/baseline_logout_24"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         android:layout_marginEnd="24dp"
-        android:layout_marginTop="8dp"
-        />
+        android:text="Dark Mode"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/welcomeLabel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/welcomeLabel"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="0dp"

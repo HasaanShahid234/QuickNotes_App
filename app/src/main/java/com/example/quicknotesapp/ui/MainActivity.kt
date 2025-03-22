@@ -21,15 +21,14 @@ import com.example.quicknotesapp.model.Note
 import com.example.quicknotesapp.utils.NoteViewModel
 import yuku.ambilwarna.AmbilWarnaDialog
 import java.util.Locale
+import kotlin.jvm.java
 
 class MainActivity : AppCompatActivity(), NoteAdapter.ClickHandler {
     private lateinit var viewModel: NoteViewModel
     private lateinit var adapter: NoteAdapter
     private lateinit var binding: ActivityMainBinding
     private lateinit var notesList: List<Note>
-
     private var noteTitle: String? = null
-    private var noteContent: String? = null
     private lateinit var etTitle: EditText
     private lateinit var etContent: EditText
     private lateinit var dialog: Dialog
@@ -57,12 +56,12 @@ class MainActivity : AppCompatActivity(), NoteAdapter.ClickHandler {
 
         binding.voiceBtn.setOnClickListener {
             noteTitle = null
-            noteContent = null
-            showAddNotesDialog(startWithVoice = true)
+            showAddNotesDialog()
+            startVoiceInput("title")
         }
     }
 
-    private fun showAddNotesDialog(startWithVoice: Boolean = false) {
+    private fun showAddNotesDialog() {
         dialog = Dialog(this)
         dialog.setContentView(R.layout.dialog_add_notes)
 
@@ -81,7 +80,7 @@ class MainActivity : AppCompatActivity(), NoteAdapter.ClickHandler {
             val content = etContent.text.toString().trim()
 
             if (title.isNotEmpty() && content.isNotEmpty()) {
-                val note = Note(title = title, content = content, color = Color.YELLOW, isPinned = false)
+                val note = Note(title = title, content = content, color = Color.CYAN, isPinned = false)
                 viewModel.insert(note)
                 Toast.makeText(this, "Note added successfully!", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
@@ -92,10 +91,6 @@ class MainActivity : AppCompatActivity(), NoteAdapter.ClickHandler {
         }
 
         dialog.show()
-
-        if (startWithVoice) {
-            startVoiceInput("title")
-        }
     }
 
     private fun startVoiceInput(type: String) {
@@ -120,7 +115,7 @@ class MainActivity : AppCompatActivity(), NoteAdapter.ClickHandler {
             if (!matches.isNullOrEmpty()) {
                 noteTitle = matches[0]
                 etTitle.setText(noteTitle)
-                startVoiceInput("content") 
+                startVoiceInput("content")
             }
         } else {
             Toast.makeText(this, "Failed to recognize speech", Toast.LENGTH_SHORT).show()
@@ -133,8 +128,7 @@ class MainActivity : AppCompatActivity(), NoteAdapter.ClickHandler {
         if (result.resultCode == RESULT_OK && result.data != null) {
             val matches = result.data!!.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
             if (!matches.isNullOrEmpty()) {
-                noteContent = matches[0]
-                etContent.setText(noteContent)
+                etContent.setText(matches[0])
             }
         } else {
             Toast.makeText(this, "Failed to recognize speech", Toast.LENGTH_SHORT).show()
@@ -155,5 +149,11 @@ class MainActivity : AppCompatActivity(), NoteAdapter.ClickHandler {
 
     override fun onPinClick(note: Note) {
         viewModel.update(note)
+    }
+
+    override fun onItemClicked(note: Note) {
+        val intent = Intent(this, NoteDetailsActivity::class.java)
+        intent.putExtra("notes", note)
+        startActivity(intent)
     }
 }

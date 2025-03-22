@@ -34,6 +34,10 @@ class NoteAdapter(private var notesList: List<Note>, private val clickHandler: C
         holder.binding.btnPin.setOnClickListener {
             clickHandler.onPinClick(note.copy(isPinned = !note.isPinned))
         }
+
+        holder.itemView.setOnClickListener {
+            clickHandler.onItemClicked(note)
+        }
     }
 
     override fun getItemCount() = notesList.size
@@ -46,5 +50,6 @@ class NoteAdapter(private var notesList: List<Note>, private val clickHandler: C
     interface ClickHandler {
         fun onColorClick(note: Note)
         fun onPinClick(note: Note)
+        fun onItemClicked(note: Note)
     }
 }

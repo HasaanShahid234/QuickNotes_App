@@ -2,6 +2,7 @@ package com.example.quicknotesapp.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.io.Serializable
 
 @Entity(tableName = "notes")
 data class Note(
@@ -10,4 +11,4 @@ data class Note(
     val content: String,
     val color: Int,
     val isPinned: Boolean
-)
+) : Serializable
